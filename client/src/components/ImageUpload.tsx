@@ -12,7 +12,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUpload }) => {
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       if (acceptedFiles.length > 0) {
-        onImageUpload(acceptedFiles[0]);
+        onImageUpload(acceptedFiles[0]); // Pass the file to the parent
       }
     },
     [onImageUpload]
@@ -25,6 +25,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUpload }) => {
       multiple: false,
     });
 
+  // Handle paste event
   useEffect(() => {
     const handlePaste = (event: ClipboardEvent) => {
       const items = event.clipboardData?.items;
@@ -32,13 +33,13 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUpload }) => {
         for (let i = 0; i < items.length; i++) {
           if (items[i].type.indexOf("image") !== -1) {
             const blob = items[i].getAsFile();
-            if (blob) onImageUpload(blob);
+            if (blob) onImageUpload(blob); // Handle image paste
           } else if (items[i].type === "text/plain") {
             items[i].getAsString((text) => {
               if (
                 text.match(/^(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)$/)
               ) {
-                onImageUpload(text);
+                onImageUpload(text); // Handle URL paste
               }
             });
           }

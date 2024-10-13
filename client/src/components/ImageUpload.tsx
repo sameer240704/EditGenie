@@ -12,7 +12,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUpload }) => {
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       if (acceptedFiles.length > 0) {
-        onImageUpload(acceptedFiles[0]); // Pass the file to the parent
+        onImageUpload(acceptedFiles[0]);
       }
     },
     [onImageUpload]
@@ -25,7 +25,6 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUpload }) => {
       multiple: false,
     });
 
-  // Handle paste event
   useEffect(() => {
     const handlePaste = (event: ClipboardEvent) => {
       const items = event.clipboardData?.items;
@@ -33,13 +32,13 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUpload }) => {
         for (let i = 0; i < items.length; i++) {
           if (items[i].type.indexOf("image") !== -1) {
             const blob = items[i].getAsFile();
-            if (blob) onImageUpload(blob); // Handle image paste
+            if (blob) onImageUpload(blob);
           } else if (items[i].type === "text/plain") {
             items[i].getAsString((text) => {
               if (
                 text.match(/^(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)$/)
               ) {
-                onImageUpload(text); // Handle URL paste
+                onImageUpload(text);
               }
             });
           }
@@ -52,7 +51,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUpload }) => {
   }, [onImageUpload]);
 
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="w-full max-w-sm mx-auto">
       <div
         {...getRootProps()}
         className={`relative bg-white rounded-xl shadow-md transition-all duration-300 ease-in-out
@@ -68,15 +67,15 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUpload }) => {
               ? "border-blue-500 bg-blue-50"
               : "hover:border-blue-400"
           }
-          border-2 border-dashed p-6 cursor-pointer`}
+          p-6 cursor-pointer`}
       >
         <input {...getInputProps()} />
         <div className="flex flex-col items-center justify-center">
-          <button className="bg-rose-500 text-white font-semibold py-2 px-4 rounded-full mb-2 flex items-center">
+          <button className="bg-blue-500 text-white font-semibold py-2 px-10 rounded-xl mb-2 flex items-center tracking-wider">
             <Upload className="mr-2" size={20} />
             Upload Image
           </button>
-          <p className="text-sm text-gray-500">or drop a file here</p>
+          <p className="text-xs text-gray-500">or drop a file here</p>
           <p className="text-xs text-gray-400 mt-1">
             CTRL+V to paste image or URL
           </p>

@@ -1,7 +1,14 @@
 import React, { useState } from "react";
-import { LeftSidebar, RightSidebar } from "@/components";
-import ImageUpload from "@/components/ImageUpload";
+import {
+  DownloadArea,
+  ImageDisplay,
+  ImageUpload,
+  LeftSidebar,
+  RightSidebar,
+} from "@/components";
 import axios from "axios";
+import { toast } from "sonner";
+import { X } from "lucide-react";
 
 interface DroppedFile {
   preview: string;
@@ -12,6 +19,7 @@ interface DroppedFile {
 const ImageEditor: React.FC = () => {
   const [file, setFile] = useState<DroppedFile | null>(null);
   const [processedImage, setProcessedImage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const handleImageUpload = (file: File | string) => {
     if (typeof file === "string") {
@@ -28,14 +36,18 @@ const ImageEditor: React.FC = () => {
   const removeFile = () => {
     setFile(null);
     setProcessedImage(null);
+    setIsSubmitting(false);
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
+    setIsSubmitting(true);
     if (file && file.file) {
       const formData = new FormData();
       formData.append("file", file.file);
+
+      toast.success("Image uploaded successfully");
 
       try {
         const response = await axios.post(
@@ -51,13 +63,11 @@ const ImageEditor: React.FC = () => {
 
         const imageUrl = URL.createObjectURL(new Blob([response.data]));
         setProcessedImage(imageUrl);
-
-        console.log("Image uploaded successfully:", response.data);
       } catch (error) {
-        console.error("Error uploading the image:", error);
+        toast.error("Error uploading the image");
       }
     } else {
-      console.error("No file to upload");
+      toast.error("No file to upload");
     }
   };
 
@@ -66,51 +76,55 @@ const ImageEditor: React.FC = () => {
       <LeftSidebar />
 
       <div className="inset-0 bg-gray-100 flex flex-col justify-center items-center p-8 h-full w-full mx-3 my-5">
-        <div className="w-full max-w-2xl">
+        <div className="w-11/12">
           <ImageUpload onImageUpload={handleImageUpload} />
-
-          <div className="flex justify-around items-center mt-8 gap-x-10">
-            {file && (
-              <div className="flex flex-col items-center">
-                <h2 className="mb-2 font-semibold">Original Image</h2>
-                <div className="relative w-96 h-96">
-                  <img
-                    src={file.preview}
-                    alt={file.name}
-                    className="w-full h-full object-contain rounded-lg shadow-md"
+          {isSubmitting && (
+            <div className="relative flex justify-between items-center mt-8 gap-x-10 border-2 px-5 py-6 shadow-md bg-white rounded-xl">
+              <X
+                className="absolute right-5 top-5 hover:cursor-pointer hover:text-red-500 active:text-red-700"
+                onClick={removeFile}
+              />
+              <div className="flex justify-center items-center gap-x-5">
+                {file ? (
+                  <ImageDisplay
+                    title="Original Image"
+                    imageUrl={file.preview}
+                    imageName={file.name}
                   />
-                  <button
-                    onClick={removeFile}
-                    className="absolute top-2 right-2 bg-red-500 text-white font-semibold py-1 px-3 rounded-full"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            )}
+                ) : (
+                  <div className="flex flex-col items-center justify-center w-96 h-96 bg-gray-200 rounded-lg shadow-inner">
+                    <span className="text-gray-500">No Original Image</span>
+                  </div>
+                )}
 
-            {processedImage && (
-              <div className="flex flex-col items-center">
-                <h2 className="mb-2 font-semibold">Processed Image</h2>
-                <div className="relative w-96 h-96">
-                  <img
-                    src={processedImage}
-                    alt="Processed"
-                    className="w-full h-full object-contain rounded-lg shadow-md"
+                {processedImage ? (
+                  <ImageDisplay
+                    title="Processed Image"
+                    imageUrl={processedImage}
+                    animate={true}
                   />
-                  <button
-                    onClick={removeFile}
-                    className="absolute top-2 right-2 bg-red-500 text-white font-semibold py-1 px-3 rounded-full"
-                  >
-                    Remove
-                  </button>
-                </div>
+                ) : (
+                  <div className="flex flex-col items-center">
+                    <h2 className="mb-2 font-bold tracking-tighter">
+                      Processed Image
+                    </h2>
+                    <div className="relative w-96 h-96 overflow-hidden rounded-lg">
+                      <img
+                        src={file?.preview}
+                        alt={file?.name}
+                        className="w-full h-full object-contain shadow-md"
+                        style={{ filter: "blur(20px)" }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+
+              <DownloadArea imageUrl={processedImage} />
+            </div>
+          )}
         </div>
 
-        {/* Submit Button */}
         <div
           className="mt-8 bg-green-500 px-10 py-2 rounded-lg hover:bg-green-600 cursor-pointer active:scale-95"
           onClick={handleSubmit}

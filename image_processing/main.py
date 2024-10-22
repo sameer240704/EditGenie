@@ -6,6 +6,8 @@ import numpy as np
 from io import BytesIO
 import cv2
 from services.black_and_white import BlackAndWhite
+from services.color_enhancement import ColorEnhancementService
+from schema import ColorEnhancementRequest, ColorEnhancementResponse
 
 app = FastAPI()
 
@@ -43,3 +45,26 @@ async def upload_image(file: UploadFile = File(...)):
 
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
+    
+@app.post("/api/enhance-color")
+async def enhance_color(
+    image: UploadFile = File(...),
+    color: Tuple[int, int, int] = (0, 0, 0),
+    enhancement_factor: float = 1.5
+):
+    try:
+        enhanced_image = await color_service.enhance_color(
+            image, 
+            color, 
+            enhancement_factor
+        )
+        return ColorEnhancementResponse(
+            success=True,
+            message="Image enhanced successfully",
+            image_url="/path/to/saved/image"  # Implement your image storage logic
+        )
+    except Exception as e:
+        return ColorEnhancementResponse(
+            success=False,
+            message=str(e)
+        )

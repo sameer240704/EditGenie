@@ -115,7 +115,7 @@ const ImageEditor: React.FC = () => {
                 ) : (
                   <div className="flex flex-col items-center">
                     <h2 className="mb-2 font-bold tracking-tighter">
-                      Processed Image
+                      Processing Image...
                     </h2>
                     <div className="relative w-96 h-96 overflow-hidden rounded-lg">
                       <img

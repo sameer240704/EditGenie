@@ -7,6 +7,7 @@ from io import BytesIO
 import cv2
 from services.black_and_white import BlackAndWhite
 from services.color_enhancement import ColorEnhancementService
+from services.focus_effect import FocusEffect
 from schema import ColorEnhancementRequest, ColorEnhancementResponse
 from services.background_remover import BackgroundRemover
 
@@ -25,7 +26,7 @@ app.add_middleware(
 )
 
 @app.post("/upload-image")
-async def upload_image(file: UploadFile = File(...), service: str = Form(...)):
+async def upload_image(file: UploadFile = File(...), service: str = Form(...), rg: float = Form(None)):
     try:
         contents = await file.read()
         np_img = np.frombuffer(contents, np.uint8)
@@ -37,6 +38,8 @@ async def upload_image(file: UploadFile = File(...), service: str = Form(...)):
         
         if service == "Background Removal":
             processed_img = BackgroundRemover(img)
+        elif service == "Focus Effect":
+            processed_img = FocusEffect(img)
         else:
             processed_img = BlackAndWhite(img)
 

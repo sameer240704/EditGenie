@@ -1,5 +1,5 @@
 import React from "react";
-import { Image, Palette } from "lucide-react";
+import { Image, Palette, Copyright } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useGlobalState } from "@/context/GlobalStateProvider";
@@ -14,6 +14,11 @@ const tools = [
     name: "Color Enhancer",
     icon: Palette,
     description: "Boost color vibrancy",
+  },
+  {
+    name: "Image Copywriter",
+    icon: Copyright,
+    description: "Add a watermark",
   },
   {
     name: "Focus Effect",

@@ -7,6 +7,7 @@ from io import BytesIO
 import cv2
 from services.black_and_white import BlackAndWhite
 from services.color_enhancement import ColorEnhancementService
+from services.image_watermark import add_watermark
 from services.focus_effect import FocusEffect
 from schema import ColorEnhancementRequest, ColorEnhancementResponse
 from services.background_remover import BackgroundRemover
@@ -26,7 +27,7 @@ app.add_middleware(
 )
 
 @app.post("/upload-image")
-async def upload_image(file: UploadFile = File(...), service: str = Form(...), rg: float = Form(None)):
+async def upload_image(file: UploadFile = File(...), service: str = Form(...),watermark: str = Form(None)):
     try:
         contents = await file.read()
         np_img = np.frombuffer(contents, np.uint8)
@@ -36,19 +37,30 @@ async def upload_image(file: UploadFile = File(...), service: str = Form(...), r
         if img is None:
             return JSONResponse(content={"error": "Invalid image format"}, status_code=400)
         
+        processed_img = None
         if service == "Background Removal":
             processed_img = BackgroundRemover(img)
+        elif service == "Image Copywriter":
+            processed_img = add_watermark(img,watermark)
+        elif service == "Color Enhancement":  
+            processed_img = ColorEnhancementService(img)
         elif service == "Focus Effect":
             processed_img = FocusEffect(img)
         else:
-            processed_img = BlackAndWhite(img)
+            return JSONResponse(content={"error": "Service not recognized"}, status_code=400)
 
+        
+        if processed_img is None:
+            return JSONResponse(content={"error": "Image processing failed."}, status_code=500)
+
+    
         _, buffer = cv2.imencode('.png', processed_img)
         processed_image_bytes = buffer.tobytes()
 
         return StreamingResponse(BytesIO(processed_image_bytes), media_type="image/png")
 
     except Exception as e:
+        print("Error in /upload-image endpoint:", str(e))
         return JSONResponse(content={"error": str(e)}, status_code=500)
     
 # @app.post("/api/enhance-color")

@@ -26,7 +26,7 @@ app.add_middleware(
 )
 
 @app.post("/upload-image")
-async def upload_image(file: UploadFile = File(...), service: str = Form(...),watermark: str = Form(...)):
+async def upload_image(file: UploadFile = File(...), service: str = Form(...),watermark: str = Form(None)):
     try:
         contents = await file.read()
         np_img = np.frombuffer(contents, np.uint8)
@@ -41,7 +41,7 @@ async def upload_image(file: UploadFile = File(...), service: str = Form(...),wa
             processed_img = BackgroundRemover(img)
         elif service == "Image Copywriter":
             processed_img = add_watermark(img,watermark)
-        elif service == "Color Enhancement":  # Additional service examples
+        elif service == "Color Enhancement":  
             processed_img = ColorEnhancementService(img)
         else:
             return JSONResponse(content={"error": "Service not recognized"}, status_code=400)

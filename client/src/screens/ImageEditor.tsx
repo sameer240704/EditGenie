@@ -89,13 +89,17 @@ const ImageEditor: React.FC = () => {
 
         <div className="w-11/12">
           <ImageUpload onImageUpload={handleImageUpload} />
-          <input
-            type="text"
-            value={watermarkText}
-            onChange={(e) => setWatermarkText(e.target.value)}
-            placeholder="Enter watermark text"
-            className="mt-4 p-2 border border-gray-300 rounded"
-          />
+          <div className="flex flex-col justify-center mt-3">
+            <h2>Add text for custom watermark</h2>
+            <input
+              type="text"
+              value={watermarkText}
+              onChange={(e) => setWatermarkText(e.target.value)}
+              placeholder="Enter watermark text"
+              className="mt-4 p-2 border border-gray-300 rounded"
+            />
+          </div>
+
           {isSubmitting && (
             <div className="relative flex justify-between items-center mt-8 gap-x-10 border-2 px-5 py-6 shadow-md bg-white rounded-xl">
               <X

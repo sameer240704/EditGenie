@@ -2,23 +2,19 @@ from PIL import Image, ImageDraw, ImageFont
 import cv2
 import numpy as np
 import platform
+import os
 
 def get_font(font_size=150):
     try:
-        if platform.system() == "Windows":
-           
-            return ImageFont.truetype("C:\\Windows\\Fonts\\Arial.ttf", font_size)
-        else:
-            
-            return ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size)
+        font_path = os.path.join("assets", "fonts", "ARIAL.ttf") 
+        return ImageFont.truetype(font_path, font_size)
     except Exception as e:
         print("Font loading error:", e)
-      
         return ImageFont.load_default()
 
 def add_watermark(
     image: np.ndarray,  
-    watermark_text="Vinti",
+    watermark_text="Copyright",
     font_size=150,
     font_color=(255, 255, 255, 80),
     angle=-45

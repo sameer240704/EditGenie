@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
@@ -8,8 +8,7 @@ import cv2
 from services.black_and_white import BlackAndWhite
 from services.color_enhancement import ColorEnhancementService
 from schema import ColorEnhancementRequest, ColorEnhancementResponse
-
-app = FastAPI()
+from services.background_remover import BackgroundRemover
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -26,7 +25,7 @@ app.add_middleware(
 )
 
 @app.post("/upload-image")
-async def upload_image(file: UploadFile = File(...)):
+async def upload_image(file: UploadFile = File(...), service: str = Form(...)):
     try:
         contents = await file.read()
         np_img = np.frombuffer(contents, np.uint8)
@@ -36,7 +35,10 @@ async def upload_image(file: UploadFile = File(...)):
         if img is None:
             return JSONResponse(content={"error": "Invalid image format"}, status_code=400)
         
-        processed_img = BlackAndWhite(img)
+        if service == "Background Removal":
+            processed_img = BackgroundRemover(img)
+        else:
+            processed_img = BlackAndWhite(img)
 
         _, buffer = cv2.imencode('.png', processed_img)
         processed_image_bytes = buffer.tobytes()
@@ -46,25 +48,25 @@ async def upload_image(file: UploadFile = File(...)):
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
     
-@app.post("/api/enhance-color")
-async def enhance_color(
-    image: UploadFile = File(...),
-    color: Tuple[int, int, int] = (0, 0, 0),
-    enhancement_factor: float = 1.5
-):
-    try:
-        enhanced_image = await color_service.enhance_color(
-            image, 
-            color, 
-            enhancement_factor
-        )
-        return ColorEnhancementResponse(
-            success=True,
-            message="Image enhanced successfully",
-            image_url="/path/to/saved/image"  # Implement your image storage logic
-        )
-    except Exception as e:
-        return ColorEnhancementResponse(
-            success=False,
-            message=str(e)
-        )
+# @app.post("/api/enhance-color")
+# async def enhance_color(
+#     image: UploadFile = File(...),
+#     color: tuple[int, int, int] = (0, 0, 0),
+#     enhancement_factor: float = 1.5
+# ):
+#     try:
+#         enhanced_image = await color_service.enhance_color(
+#             image, 
+#             color, 
+#             enhancement_factor
+#         )
+#         return ColorEnhancementResponse(
+#             success=True,
+#             message="Image enhanced successfully",
+#             image_url="/path/to/saved/image"  # Implement your image storage logic
+#         )
+#     except Exception as e:
+#         return ColorEnhancementResponse(
+#             success=False,
+#             message=str(e)
+#         )

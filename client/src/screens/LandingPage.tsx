@@ -19,7 +19,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
 const LandingPage: React.FC = () => {
@@ -32,8 +31,6 @@ const LandingPage: React.FC = () => {
     password: "",
     name: "",
   });
-
-  const { user, login, register } = useAuth();
 
   useEffect(() => {
     setIsVisible(true);
@@ -110,7 +107,7 @@ const LandingPage: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login(formData.email, formData.password);
+      // await login(formData.email, formData.password);
       setShowLogin(false);
     } catch (error) {
       console.error("Login failed:", error);
@@ -126,12 +123,12 @@ const LandingPage: React.FC = () => {
     }
 
     try {
-      await register(
-        formData.name,
-        formData.email,
-        formData.password,
-        primaryImage
-      );
+      // await register(
+      //   formData.name,
+      //   formData.email,
+      //   formData.password,
+      //   primaryImage
+      // );
       setShowRegister(false);
     } catch (error) {
       console.error("Registration failed:", error);

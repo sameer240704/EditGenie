@@ -9,6 +9,7 @@ import {
 import axios from "axios";
 import { toast } from "sonner";
 import { X } from "lucide-react";
+import { useGlobalState } from "@/context/GlobalStateProvider";
 
 interface DroppedFile {
   preview: string;
@@ -20,6 +21,7 @@ const ImageEditor: React.FC = () => {
   const [file, setFile] = useState<DroppedFile | null>(null);
   const [processedImage, setProcessedImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const { selected } = useGlobalState();
 
   const handleImageUpload = (file: File | string) => {
     if (typeof file === "string") {
@@ -46,6 +48,7 @@ const ImageEditor: React.FC = () => {
     if (file && file.file) {
       const formData = new FormData();
       formData.append("file", file.file);
+      formData.append("service", selected);
 
       toast.success("Image uploaded successfully");
 
@@ -76,6 +79,12 @@ const ImageEditor: React.FC = () => {
       <LeftSidebar />
 
       <div className="inset-0 bg-gray-100 flex flex-col justify-center items-center p-8 h-full w-full mx-3 my-5">
+        <div className="absolute top-4 mb-6 px-4 py-2 bg-blue-500 text-white rounded-lg shadow-lg text-center">
+          <h2 className="text-lg font-semibold">
+            {selected ? `Applying Tool: ${selected}` : "No Tool Selected"}
+          </h2>
+        </div>
+
         <div className="w-11/12">
           <ImageUpload onImageUpload={handleImageUpload} />
           {isSubmitting && (

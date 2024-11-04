@@ -15,6 +15,11 @@ const tools = [
     icon: Palette,
     description: "Boost color vibrancy",
   },
+  {
+    name: "Focus Effect",
+    icon: Image,
+    description: "Add focus to your images",
+  },
 ];
 
 const RightSidebar: React.FC = () => {

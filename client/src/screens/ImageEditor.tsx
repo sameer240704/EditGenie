@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   DownloadArea,
   ImageDisplay,
@@ -8,7 +8,7 @@ import {
 } from "@/components";
 import axios from "axios";
 import { toast } from "sonner";
-import { X } from "lucide-react";
+import { X, Palette, Check } from "lucide-react";
 import { useGlobalState } from "@/context/GlobalStateProvider";
 
 interface DroppedFile {
@@ -23,6 +23,10 @@ const ImageEditor: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const { selected } = useGlobalState();
   const [watermarkText, setWatermarkText] = useState<string>("Copyright");
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const imageRef = useRef<HTMLImageElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const handleImageUpload = (file: File | string) => {
     if (typeof file === "string") {
@@ -40,6 +44,50 @@ const ImageEditor: React.FC = () => {
     setFile(null);
     setProcessedImage(null);
     setIsSubmitting(false);
+    setSelectedColor(null);
+  };
+
+  const handleImageClick = () => {
+    setIsModalOpen(true);
+  };
+
+  useEffect(() => {
+    if (isModalOpen && imageRef.current && canvasRef.current) {
+      const img = imageRef.current;
+      const canvas = canvasRef.current;
+
+      img.onload = () => {
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+        }
+      };
+    }
+  }, [isModalOpen]);
+
+  const handleModalClick = (event: React.MouseEvent<HTMLImageElement>) => {
+    if (!imageRef.current || !canvasRef.current) return;
+    const img = imageRef.current;
+    const rect = img.getBoundingClientRect();
+
+    const scaleX = img.naturalWidth / rect.width;
+    const scaleY = img.naturalHeight / rect.height;
+
+    const clickX = event.clientX - rect.left;
+    const clickY = event.clientY - rect.top;
+
+    const canvasX = Math.floor(clickX * scaleX);
+    const canvasY = Math.floor(clickY * scaleY);
+
+    const ctx = canvasRef.current.getContext("2d");
+    if (ctx) {
+      const pixelData = ctx.getImageData(canvasX, canvasY, 1, 1).data;
+      const color = `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`;
+      setSelectedColor(color);
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -51,6 +99,12 @@ const ImageEditor: React.FC = () => {
       formData.append("file", file.file);
       formData.append("service", selected);
       formData.append("watermark", watermarkText);
+
+      if (selectedColor) {
+        formData.append("color", JSON.stringify(selectedColor));
+      } else {
+        formData.append("color", "");
+      }
 
       toast.success("Image uploaded successfully");
 
@@ -89,18 +143,24 @@ const ImageEditor: React.FC = () => {
 
         <div className="w-11/12">
           <ImageUpload onImageUpload={handleImageUpload} />
-          <div className="flex flex-col justify-center mt-3">
-            <h2>Add text for custom watermark</h2>
-            <input
-              type="text"
-              value={watermarkText}
-              onChange={(e) => setWatermarkText(e.target.value)}
-              placeholder="Enter watermark text"
-              className="mt-4 p-2 border border-gray-300 rounded"
-            />
-          </div>
-
-          {isSubmitting && (
+          {selected === "Image Copywriter" && (
+            <div className="flex flex-col justify-center mt-3">
+              <h2>Add text for custom watermark</h2>
+              <input
+                type="text"
+                value={watermarkText}
+                onChange={(e) => setWatermarkText(e.target.value)}
+                placeholder="Enter watermark text"
+                className="mt-4 p-2 border border-gray-300 rounded"
+              />
+            </div>
+          )}
+          {selected === "Color Enhancer" && file && (
+            <div className="flex flex-col justify-center mt-3">
+              <h2>Click on the image to select a color</h2>
+            </div>
+          )}
+          {file && (
             <div className="relative flex justify-between items-center mt-8 gap-x-10 border-2 px-5 py-6 shadow-md bg-white rounded-xl">
               <X
                 className="absolute right-5 top-5 hover:cursor-pointer hover:text-red-500 active:text-red-700"
@@ -109,9 +169,11 @@ const ImageEditor: React.FC = () => {
               <div className="flex justify-center items-center gap-x-5">
                 {file ? (
                   <ImageDisplay
+                    ref={imageRef}
                     title="Original Image"
                     imageUrl={file.preview}
                     imageName={file.name}
+                    onClick={handleImageClick}
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center w-96 h-96 bg-gray-200 rounded-lg shadow-inner">
@@ -153,6 +215,84 @@ const ImageEditor: React.FC = () => {
         >
           <h1 className="uppercase font-semibold text-xl text-white">Submit</h1>
         </div>
+
+        {isModalOpen && selected === "Color Enhancer" && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl p-6 shadow-xl max-w-3xl w-full mx-4">
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-2">
+                  <Palette className="w-6 h-6 text-blue-500" />
+                  <h2 className="text-2xl font-semibold">Color Picker</h2>
+                </div>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                <div className="relative group">
+                  <canvas ref={canvasRef} className="hidden" />
+                  <img
+                    ref={imageRef}
+                    src={file?.preview}
+                    alt="Uploaded"
+                    className="w-full h-auto rounded-lg cursor-crosshair hover:brightness-105 transition-all"
+                    onClick={handleModalClick}
+                  />
+                  {/* <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors rounded-lg" /> */}
+                </div>
+
+                {selectedColor && (
+                  <div className="bg-gray-50 p-4 rounded-xl space-y-4">
+                    <h3 className="font-medium text-gray-700">
+                      Selected Color
+                    </h3>
+                    <div className="flex items-center gap-4">
+                      <div className="relative">
+                        <div
+                          className="w-20 h-20 rounded-xl shadow-inner"
+                          style={{ backgroundColor: selectedColor }}
+                        />
+                        <div className="absolute -right-1 -top-1">
+                          <div className="bg-white rounded-full p-1 shadow-md">
+                            <Check className="w-4 h-4 text-green-500" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-mono text-sm bg-gray-100 px-3 py-1 rounded-md">
+                          {selectedColor}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Click anywhere on the image to select a different
+                          color
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  >
+                    Confirm Color
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <RightSidebar />

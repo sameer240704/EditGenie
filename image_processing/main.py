@@ -6,11 +6,13 @@ import numpy as np
 from io import BytesIO
 import cv2
 from services.black_and_white import BlackAndWhite
-from services.color_enhancement import ColorEnhancementService
+from services.color_enhancement import ColorEnhancer
 from services.image_watermark import add_watermark
 from services.focus_effect import FocusEffect
-from schema import ColorEnhancementRequest, ColorEnhancementResponse
 from services.background_remover import BackgroundRemover
+from services.cartoonify import Cartoonify
+from typing import Optional
+import json
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -27,7 +29,7 @@ app.add_middleware(
 )
 
 @app.post("/upload-image")
-async def upload_image(file: UploadFile = File(...), service: str = Form(...),watermark: str = Form(None)):
+async def upload_image(file: UploadFile = File(...), service: str = Form(...), watermark: str = Form(None), color: Optional[str] = Form(None)):
     try:
         contents = await file.read()
         np_img = np.frombuffer(contents, np.uint8)
@@ -41,11 +43,21 @@ async def upload_image(file: UploadFile = File(...), service: str = Form(...),wa
         if service == "Background Removal":
             processed_img = BackgroundRemover(img)
         elif service == "Image Copywriter":
-            processed_img = add_watermark(img,watermark)
-        elif service == "Color Enhancement":  
-            processed_img = ColorEnhancementService(img)
+            processed_img = add_watermark(img, watermark)
+        elif service == "Color Enhancer":  
+            color_tuple = None
+            if color.startswith('"') and color.endswith('"'):
+                color = color[1:-1] 
+
+            if color.startswith("rgb(") and color.endswith(")"):
+                color_values = color[4:-1]  
+                color_tuple = tuple(int(c.strip()) for c in color_values.split(','))
+                
+            processed_img = ColorEnhancer(img, color_tuple)
         elif service == "Focus Effect":
             processed_img = FocusEffect(img)
+        elif service == "Cartoonify":
+            processed_img = Cartoonify(img)
         else:
             return JSONResponse(content={"error": "Service not recognized"}, status_code=400)
 
@@ -62,26 +74,4 @@ async def upload_image(file: UploadFile = File(...), service: str = Form(...),wa
     except Exception as e:
         print("Error in /upload-image endpoint:", str(e))
         return JSONResponse(content={"error": str(e)}, status_code=500)
-    
-# @app.post("/api/enhance-color")
-# async def enhance_color(
-#     image: UploadFile = File(...),
-#     color: tuple[int, int, int] = (0, 0, 0),
-#     enhancement_factor: float = 1.5
-# ):
-#     try:
-#         enhanced_image = await color_service.enhance_color(
-#             image, 
-#             color, 
-#             enhancement_factor
-#         )
-#         return ColorEnhancementResponse(
-#             success=True,
-#             message="Image enhanced successfully",
-#             image_url="/path/to/saved/image"  # Implement your image storage logic
-#         )
-#     except Exception as e:
-#         return ColorEnhancementResponse(
-#             success=False,
-#             message=str(e)
-#         )
+

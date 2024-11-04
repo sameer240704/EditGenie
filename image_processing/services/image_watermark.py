@@ -6,7 +6,9 @@ import os
 
 def get_font(font_size=150):
     try:
-        font_path = os.path.join("assets", "fonts", "ARIAL.ttf") 
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        font_path = os.path.join(base_dir, "assets", "fonts", "ARIAL.TTF")
+        
         return ImageFont.truetype(font_path, font_size)
     except Exception as e:
         print("Font loading error:", e)

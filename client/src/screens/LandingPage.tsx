@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const LandingPage: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -31,6 +32,7 @@ const LandingPage: React.FC = () => {
     password: "",
     name: "",
   });
+  const navigate = useNavigate();
 
   useEffect(() => {
     setIsVisible(true);
@@ -176,7 +178,10 @@ const LandingPage: React.FC = () => {
           <p className="text-2xl mb-10 text-gray-600">
             Transform ordinary images into extraordinary masterpieces
           </p>
-          <button className="bg-blue-600 hover:bg-blue-500 text-white text-xl px-10 py-4 rounded-full transition duration-300 transform hover:scale-110 hover:shadow-lg">
+          <button
+            onClick={() => navigate("/image-editor")}
+            className="bg-blue-600 hover:bg-blue-500 text-white text-xl px-10 py-4 rounded-full transition duration-300 transform hover:scale-110 hover:shadow-lg"
+          >
             Start Editing for Free
           </button>
         </section>

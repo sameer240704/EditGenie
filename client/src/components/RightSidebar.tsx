@@ -1,5 +1,5 @@
 import React from "react";
-import { Image, Palette, Copyright } from "lucide-react";
+import { Image, Palette, Copyright, SmilePlus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useGlobalState } from "@/context/GlobalStateProvider";
@@ -9,6 +9,11 @@ const tools = [
     name: "Background Removal",
     icon: Image,
     description: "Remove unwanted backgrounds",
+  },
+  {
+    name: "Cartoonify",
+    icon: SmilePlus,
+    description: "Give a cartoon look to your images",
   },
   {
     name: "Color Enhancer",

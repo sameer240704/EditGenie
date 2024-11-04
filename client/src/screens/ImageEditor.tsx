@@ -155,11 +155,6 @@ const ImageEditor: React.FC = () => {
               />
             </div>
           )}
-          {selected === "Color Enhancer" && file && (
-            <div className="flex flex-col justify-center mt-3">
-              <h2>Click on the image to select a color</h2>
-            </div>
-          )}
           {file && (
             <div className="relative flex justify-between items-center mt-8 gap-x-10 border-2 px-5 py-6 shadow-md bg-white rounded-xl">
               <X

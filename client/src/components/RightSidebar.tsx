@@ -20,6 +20,11 @@ const tools = [
     icon: Copyright,
     description: "Add a watermark",
   },
+  {
+    name: "Focus Effect",
+    icon: Image,
+    description: "Add focus to your images",
+  },
 ];
 
 const RightSidebar: React.FC = () => {

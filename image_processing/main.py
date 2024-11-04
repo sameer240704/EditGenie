@@ -8,6 +8,7 @@ import cv2
 from services.black_and_white import BlackAndWhite
 from services.color_enhancement import ColorEnhancementService
 from services.image_watermark import add_watermark
+from services.focus_effect import FocusEffect
 from schema import ColorEnhancementRequest, ColorEnhancementResponse
 from services.background_remover import BackgroundRemover
 
@@ -43,6 +44,8 @@ async def upload_image(file: UploadFile = File(...), service: str = Form(...),wa
             processed_img = add_watermark(img,watermark)
         elif service == "Color Enhancement":  
             processed_img = ColorEnhancementService(img)
+        elif service == "Focus Effect":
+            processed_img = FocusEffect(img)
         else:
             return JSONResponse(content={"error": "Service not recognized"}, status_code=400)
 

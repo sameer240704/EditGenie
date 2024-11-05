@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-def ColorEnhancer(image, color: tuple, enhancement_factor: float = 1.5):
+def ColorEnhancer(image, color: tuple, enhancement_factor: float = 7.5):
     # Convert to HSV
     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     bgr_color = (color[2], color[1], color[0])
